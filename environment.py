@@ -17,7 +17,7 @@ WHITE = (255, 255, 255)
 class Environment:
 
     board = np.zeros((10, 10)) - 1
-    max_steps = 30
+    max_steps = 100
     box_size = 60
 
     def __init__(self):
@@ -25,6 +25,7 @@ class Environment:
         self.pos = [0, 0]
         self.step = 0
         self.path = []
+        self.path.append([0, 0])
 
     def get_reward(self):
         if self.pos[0] < 0 or self.pos[0] > 9 or self.pos[1] < 0 or self.pos[1] > 9:

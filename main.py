@@ -22,7 +22,7 @@ DISCOUNT = 0.99
 # Q table size
 SIZE = (10, 10, 4)
 
-q_table = np.random.uniform(low=-1, high=0, size=SIZE)
+q_table = np.random.uniform(low=-2, high=-1, size=SIZE)
 
 def main():
     # ----  Define the pygame window ----  #
@@ -39,10 +39,10 @@ def main():
     MOVE_DOWN = 3
     # Make the Q sides
     for i in range(10):
-        q_table[i, 0, 2] = -100 # First collum move up
-        q_table[i, 9, 1] = -100 # Last collum move down
-        q_table[0, i, 0] = -100 # First row move left
-        q_table[9, i, 3] = -100 # Last row move right
+        q_table[i, 0, 0] = -100 # First collum move up
+        q_table[9, i, 1] = -100 # Last collum move down
+        q_table[0, i, 2] = -100 # First row move left
+        q_table[i, 9, 3] = -100 # Last row move right
 
     env = Environment()
 
@@ -51,15 +51,26 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    env.move(MOVE_DOWN)
+                if event.key == pygame.K_UP:
+                    env.move(MOVE_UP)
+                if event.key == pygame.K_RIGHT:
+                    env.move(MOVE_RIGHT)
+                if event.key == pygame.K_LEFT:
+                    env.move(MOVE_LEFT)
+
 
         # Q Algorithm
-        old_state = env.pos
+        old_state = [0, 0]
+        old_state[0] = env.pos[0]
+        old_state[1] = env.pos[1]
         action = np.argmax(q_table[env.pos[0], env.pos[1]])
         current_q = q_table[env.pos[0], env.pos[1], action]
         env.move(mv=action)
         reward = env.get_reward()
-        print(reward)
-        max_future_q = np.max(q_table[old_state[0], old_state[1]])
+        max_future_q = np.max(q_table[env.pos[0], env.pos[1]])
         new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT * max_future_q)
         q_table[old_state[0], old_state[1], action] = new_q
 
