@@ -18,6 +18,8 @@ HEIGHT = 700
 # Q-learning parameters
 LEARNING_RATE = 0.1
 DISCOUNT = 0.99
+EPISODES = 1000
+VIEW_EVERY = 20
 
 # Q table size
 SIZE = (10, 10, 4)
@@ -33,10 +35,13 @@ def main():
     clock = pygame.time.Clock()
     # -----------------------------------#
 
+    """
     MOVE_UP = 0
     MOVE_RIGHT = 1
     MOVE_LEFT = 2
     MOVE_DOWN = 3
+    """
+
     # Make the Q sides
     for i in range(10):
         q_table[i, 0, 0] = -100 # First collum move up
@@ -51,36 +56,46 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    env.move(MOVE_DOWN)
-                if event.key == pygame.K_UP:
-                    env.move(MOVE_UP)
-                if event.key == pygame.K_RIGHT:
-                    env.move(MOVE_RIGHT)
-                if event.key == pygame.K_LEFT:
-                    env.move(MOVE_LEFT)
 
+        for episode in range(EPISODES):
 
-        # Q Algorithm
-        old_state = [0, 0]
-        old_state[0] = env.pos[0]
-        old_state[1] = env.pos[1]
-        action = np.argmax(q_table[env.pos[0], env.pos[1]])
-        current_q = q_table[env.pos[0], env.pos[1], action]
-        env.move(mv=action)
-        reward = env.get_reward()
-        max_future_q = np.max(q_table[env.pos[0], env.pos[1]])
-        new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT * max_future_q)
-        q_table[old_state[0], old_state[1], action] = new_q
+            if episode % VIEW_EVERY == 0:
+                view = True
+            else:
+                view = False
 
-        if env.is_Done():
-            env = Environment()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
 
-        win.fill((GREEN))
-        env.draw(win)
-        pygame.display.flip()
-        clock.tick(20)
+            q_done = False
+            while not q_done:
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        done = True
+
+                # Q Algorithm
+                old_state = [0, 0]
+                old_state[0] = env.pos[0]
+                old_state[1] = env.pos[1]
+                action = np.argmax(q_table[env.pos[0], env.pos[1]])
+                current_q = q_table[old_state[0], old_state[1], action]
+                env.move(mv=action)
+                reward = env.get_reward()
+                max_future_q = np.max(q_table[env.pos[0], env.pos[1]])
+                new_q = (1 - LEARNING_RATE) * current_q + LEARNING_RATE * (reward + DISCOUNT * max_future_q)
+                q_table[old_state[0], old_state[1], action] = new_q
+
+                if env.is_Done():
+                    env = Environment()
+                    q_done = True
+
+                if view:
+                    win.fill((GREEN))
+                    env.draw(win)
+                    pygame.display.flip()
+                    clock.tick(20)
 
 if __name__ == '__main__':
     run = True

@@ -35,7 +35,7 @@ class Environment:
     def is_Done(self):
         if self.pos[0] < 0 or self.pos[0] > 9 or self.pos[1] < 0 or self.pos[1] > 9:
             return True
-        if self.pos == (9, 9):
+        if self.pos == [9, 9]:
             return True
         if self.step > self.max_steps:
             return True
