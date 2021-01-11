@@ -49,7 +49,12 @@ def main():
         q_table[0, i, 2] = -100 # First row move left
         q_table[i, 9, 3] = -100 # Last row move right
 
+    # Make the environment
     env = Environment()
+
+    # Display font
+    font = pygame.font.Font('freesansbold.ttf', 32)
+
 
     while not done:
 
@@ -92,8 +97,10 @@ def main():
                     q_done = True
 
                 if view:
+                    episode_text = font.render("Episode: " + str(episode), True, BLACK)
                     win.fill((GREEN))
                     env.draw(win)
+                    win.blit(episode_text, (50, 630))
                     pygame.display.flip()
                     clock.tick(20)
 
