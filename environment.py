@@ -16,26 +16,33 @@ WHITE = (255, 255, 255)
 
 class Environment:
 
-    board = np.zeros((10, 10)) - 1
-    max_steps = 100
-    box_size = 60
+    box_size = 30
+    board_size = [20, 20]
+    max_steps = 300
 
     def __init__(self):
-        self.board[9, 9] = 10
+        self.board = np.zeros((self.board_size[0], self.board_size[1])) - 1
+        self.board[self.board_size[0] - 1, self.board_size[1] - 1] = 10
         self.pos = [0, 0]
         self.step = 0
         self.path = []
         self.path.append([0, 0])
+        self.fire = []
 
     def get_reward(self):
-        if self.pos[0] < 0 or self.pos[0] > 9 or self.pos[1] < 0 or self.pos[1] > 9:
+        if self.pos[0] < 0 or self.pos[0] > self.board_size[0] - 1 or self.pos[1] < 0 or self.pos[1] > self.board_size[1] - 1:
             return -100
         return self.board[self.pos[0], self.pos[1]]
 
     def is_Done(self):
-        if self.pos[0] < 0 or self.pos[0] > 9 or self.pos[1] < 0 or self.pos[1] > 9:
+
+        for f in self.fire:
+            if self.pos[0] == f[0] and self.pos[1] == f[1]:
+                return True
+
+        if self.pos[0] < 0 or self.pos[0] > self.board_size[0] - 1 or self.pos[1] < 0 or self.pos[1] > self.board_size[1] - 1:
             return True
-        if self.pos == [9, 9]:
+        if self.pos == [self.board_size[0] - 1, self.board_size[1] - 1]:
             return True
         if self.step > self.max_steps:
             return True
@@ -67,8 +74,8 @@ class Environment:
 
     def draw(self, win):
         self.step = self.step + 1
-        for x in range(10):
-            for y in range(10):
+        for x in range(self.board_size[0]):
+            for y in range(self.board_size[1]):
                 xx = x*self.box_size
                 yy = y*self.box_size
                 for p in self.path:
@@ -76,7 +83,33 @@ class Environment:
                         pygame.draw.rect(win, AQUA, (xx, yy, self.box_size, self.box_size), 0)
                 if self.pos == [x, y]:
                     pygame.draw.rect(win, BLACK, (xx, yy, self.box_size, self.box_size), 0)
-                elif (x, y) == (9, 9):
+                elif (x, y) == (self.board_size[0] - 1, self.board_size[1] - 1):
                     pygame.draw.rect(win, WHITE, (xx, yy, self.box_size, self.box_size), 0)
-
                 pygame.draw.rect(win, BLACK, (xx, yy, self.box_size, self.box_size), 3)
+        for f in self.fire:
+            xx = f[0] * self.box_size
+            yy = f[1] * self.box_size
+            pygame.draw.rect(win, BLACK, (xx, yy, self.box_size, self.box_size), 0)
+
+    def if_click(self):
+        pos = pygame.mouse.get_pos()
+        x = pos[0]
+        y = pos[1]
+
+        for i in range(self.board_size[0]):
+            for j in range(self.board_size[1]):
+                x1 = i * self.box_size
+                x2 = (i + 1) * self.box_size
+                y1 = j * self.box_size
+                y2 = (j + 1) * self.box_size
+                if x > x1 and x < x2 and y > y1 and y < y2:
+                    self.fire.append([i, j])
+                    self.board[i, j] = -100
+
+    def reset(self):
+        self.step = 0
+        self.pos[0] = 0
+        self.pos[1] = 0
+        self.path = []
+        self.path.append([0, 0])
+
