@@ -17,12 +17,12 @@ WHITE = (255, 255, 255)
 class Environment:
 
     box_size = 30
-    board_size = [20, 20]
+    board_size = 25
     max_steps = 300
 
     def __init__(self):
-        self.board = np.zeros((self.board_size[0], self.board_size[1])) - 1
-        self.board[self.board_size[0] - 1, self.board_size[1] - 1] = 10
+        self.board = np.zeros((self.board_size, self.board_size)) - 1
+        self.board[self.board_size - 1, self.board_size - 1] = 10
         self.pos = [0, 0]
         self.step = 0
         self.path = []
@@ -30,7 +30,7 @@ class Environment:
         self.fire = []
 
     def get_reward(self):
-        if self.pos[0] < 0 or self.pos[0] > self.board_size[0] - 1 or self.pos[1] < 0 or self.pos[1] > self.board_size[1] - 1:
+        if self.pos[0] < 0 or self.pos[0] > self.board_size - 1 or self.pos[1] < 0 or self.pos[1] > self.board_size - 1:
             return -100
         return self.board[self.pos[0], self.pos[1]]
 
@@ -40,9 +40,9 @@ class Environment:
             if self.pos[0] == f[0] and self.pos[1] == f[1]:
                 return True
 
-        if self.pos[0] < 0 or self.pos[0] > self.board_size[0] - 1 or self.pos[1] < 0 or self.pos[1] > self.board_size[1] - 1:
+        if self.pos[0] < 0 or self.pos[0] > self.board_size - 1 or self.pos[1] < 0 or self.pos[1] > self.board_size - 1:
             return True
-        if self.pos == [self.board_size[0] - 1, self.board_size[1] - 1]:
+        if self.pos == [self.board_size - 1, self.board_size - 1]:
             return True
         if self.step > self.max_steps:
             return True
@@ -55,27 +55,31 @@ class Environment:
             self.pos[1] = self.pos[1] - 1
             x = self.pos[0]
             y = self.pos[1]
-            self.path.append([x, y])
         elif mv == MOVE_DOWN:
             self.pos[1] = self.pos[1] + 1
             x = self.pos[0]
             y = self.pos[1]
-            self.path.append([x, y])
         elif mv == MOVE_LEFT:
             self.pos[0] = self.pos[0] - 1
             x = self.pos[0]
             y = self.pos[1]
-            self.path.append([x, y])
         elif mv == MOVE_RIGHT:
             self.pos[0] = self.pos[0] + 1
             x = self.pos[0]
             y = self.pos[1]
+        add = True
+        for p in self.path:
+            if p[0] == self.pos[0] and p[1] == self.pos[1]:
+                add = False
+                break
+
+        if add:
             self.path.append([x, y])
 
     def draw(self, win):
         self.step = self.step + 1
-        for x in range(self.board_size[0]):
-            for y in range(self.board_size[1]):
+        for x in range(self.board_size):
+            for y in range(self.board_size):
                 xx = x*self.box_size
                 yy = y*self.box_size
                 for p in self.path:
@@ -83,7 +87,7 @@ class Environment:
                         pygame.draw.rect(win, AQUA, (xx, yy, self.box_size, self.box_size), 0)
                 if self.pos == [x, y]:
                     pygame.draw.rect(win, BLACK, (xx, yy, self.box_size, self.box_size), 0)
-                elif (x, y) == (self.board_size[0] - 1, self.board_size[1] - 1):
+                elif (x, y) == (self.board_size - 1, self.board_size - 1):
                     pygame.draw.rect(win, WHITE, (xx, yy, self.box_size, self.box_size), 0)
                 pygame.draw.rect(win, BLACK, (xx, yy, self.box_size, self.box_size), 3)
         for f in self.fire:
@@ -96,8 +100,8 @@ class Environment:
         x = pos[0]
         y = pos[1]
 
-        for i in range(self.board_size[0]):
-            for j in range(self.board_size[1]):
+        for i in range(self.board_size):
+            for j in range(self.board_size):
                 x1 = i * self.box_size
                 x2 = (i + 1) * self.box_size
                 y1 = j * self.box_size

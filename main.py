@@ -1,6 +1,5 @@
 import pygame
 import numpy as np
-import random
 from environment import*
 
 # Define the colors
@@ -12,14 +11,14 @@ TEAL = (0, 128, 128)
 WHITE = (255, 255, 255)
 
 # Window size
-WEIDTH = 1055
-HEIGHT = 700
+WEIDTH = 800
+HEIGHT = 800
 
 # Q-learning parameters
 LEARNING_RATE = 0.1
 DISCOUNT = 0.99
-EPISODES = 10000
-VIEW_EVERY = 250
+EPISODES = 1000
+VIEW_EVERY = 100
 
 def main():
 
@@ -41,18 +40,15 @@ def main():
     env = Environment()
 
     # Q table size
-    SIZE = (env.board_size[0], env.board_size[1], 4)
+    SIZE = env.board_size
 
     # Make the Q sides
-    q_table = np.random.uniform(low=-2, high=-1, size=SIZE)
-    for i in range(20):
+    q_table = np.random.uniform(low=-2, high=-1, size=(SIZE, SIZE, 4))
+    for i in range(SIZE):
         q_table[i, 0, 0] = -100  # First collum move up
-        q_table[SIZE[0] - 1, i, 1] = -100  # Last collum move down
+        q_table[SIZE - 1, i, 1] = -100  # Last collum move down
         q_table[0, i, 2] = -100  # First row move left
-        q_table[i, SIZE[1] - 1, 3] = -100  # Last row move right
-
-    # Display font
-    font = pygame.font.Font('freesansbold.ttf', 32)
+        q_table[i, SIZE - 1, 3] = -100  # Last row move right
 
     # This boolean is for making the arena
     making = True
@@ -62,6 +58,10 @@ def main():
     while not done:
 
         if making:
+
+            # Display font
+            font = pygame.font.Font('freesansbold.ttf', 20)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
@@ -74,43 +74,40 @@ def main():
                     draw = False
 
                 if event.type == pygame.KEYDOWN:
-                    making = False
+                    if event.key == pygame.K_END:
+                        making = False
+                    if event.key == pygame.K_r:
+                        env = Environment()
 
             if draw:
                 env.if_click()
 
             # Re-Drawing
-            episode_text = font.render("Press any key to start the training", True, BLACK)
-            explain_text = font.render("Click in the boxes to add obstacles", True, BLACK)
+            episode_text = font.render("Clicking boxes add obstacles and pressing end start training or R clear board", True, BLACK)
             win.fill((GREEN))
             env.draw(win)
-            win.blit(episode_text, (50, 655))
-            win.blit(explain_text, (50, 620))
+            win.blit(episode_text, (20, 765))
             pygame.display.flip()
             clock.tick(20)
 
         else:
+
+            # Display font
+            font = pygame.font.Font('freesansbold.ttf', 32)
+
             for episode in range(EPISODES):
 
                 if episode % VIEW_EVERY == 0:
                     view = True
                 else:
                     view = False
-
-                q_done = False
+                if not making:
+                    q_done = False
 
                 if done:
                     break
 
                 while not q_done and not done:
-
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            done = True
-
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            done = True
 
                     # Q Algorithm
                     old_state = [0, 0]
@@ -127,12 +124,23 @@ def main():
                     if env.is_Done():
                         env.reset()
                         q_done = True
+                        making = True
+
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            done = True
+
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_END:
+                                making = True
+                                q_done = True
+                                env = Environment()
 
                     if view:
                         episode_text = font.render("Episode: " + str(episode), True, BLACK)
                         win.fill((GREEN))
                         env.draw(win)
-                        win.blit(episode_text, (50, 630))
+                        win.blit(episode_text, (25, 750))
                         pygame.display.flip()
                         clock.tick(20)
 
